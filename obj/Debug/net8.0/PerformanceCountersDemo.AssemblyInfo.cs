@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PerformanceCountersDemo")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5eed9828d957e1dbe71bb8104fe99a18a52d6266")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+523c5115209d068dc9c707e18a3a37f09f4f561c")]
 [assembly: System.Reflection.AssemblyProductAttribute("PerformanceCountersDemo")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PerformanceCountersDemo")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

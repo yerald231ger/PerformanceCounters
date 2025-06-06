@@ -1,10 +1,12 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json;
 
 namespace PerformanceCounterPublisher
 {
+    [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility")]
     public class PerformanceCounterPublisher
     {
         private const string CATEGORY_NAME = "MyApp Performance";
@@ -234,7 +236,7 @@ namespace PerformanceCounterPublisher
                     // Update counters
                     Interlocked.Increment(ref _totalApiCalls);
                     _apiCallsPerSecCounter?.Increment();
-                    _apiResponseTimeCounter?.RawValue = stopwatch.ElapsedMilliseconds;
+                    _apiResponseTimeCounter!.RawValue = stopwatch.ElapsedMilliseconds;
 
                     if (!response.IsSuccessStatusCode)
                     {
@@ -293,7 +295,7 @@ namespace PerformanceCounterPublisher
                     Interlocked.Increment(ref _totalDiskWrites);
                     Interlocked.Add(ref _totalBytesWritten, bytes.Length);
                     _diskWritesPerSecCounter?.Increment();
-                    _diskBytesWrittenCounter?.RawValue = _totalBytesWritten;
+                    _diskBytesWrittenCounter!.RawValue = _totalBytesWritten;
                 }
                 catch (Exception)
                 {
@@ -379,8 +381,8 @@ namespace PerformanceCounterPublisher
 
                     // Update counters
                     Interlocked.Increment(ref _totalCpuOperations);
-                    _cpuIntensiveOperationsCounter?.RawValue = _totalCpuOperations;
-                    _averageCalculationTimeCounter?.RawValue = stopwatch.ElapsedMilliseconds;
+                    _cpuIntensiveOperationsCounter!.RawValue = _totalCpuOperations;
+                    _averageCalculationTimeCounter!.RawValue = stopwatch.ElapsedMilliseconds;
                 }
                 catch (Exception)
                 {
