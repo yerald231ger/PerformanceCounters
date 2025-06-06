@@ -1,116 +1,149 @@
-# Windows Performance Counters Demo
+# Performance Counter Publisher Demo
 
-This console application demonstrates how to read and display various Windows Performance Counters in real-time using C#.
+This console application demonstrates how to **create and publish custom Windows Performance Counters** that can be viewed in Windows Performance Monitor. The application performs various system activities (API calls, disk I/O, memory usage, CPU-intensive operations) and publishes real-time performance metrics.
 
-## 📊 Monitored System Metrics
+## 📊 Custom Performance Counters Created
 
-### 🖥️ Processor Performance
-- **Total CPU Usage**: Overall processor utilization percentage
-- **User Mode CPU**: Time spent executing user-mode code
-- **Kernel Mode CPU**: Time spent executing kernel/system code
+The application creates a **"MyApp Performance"** category with these counters:
 
-### 💾 Memory Performance  
-- **Available Memory**: Free physical memory in MB
-- **Memory Page Faults**: Pages loaded from disk per second
-- **Nonpaged Pool**: Kernel memory that cannot be paged to disk
+| Counter Name | Type | Description |
+|-------------|------|-------------|
+| **API Calls/sec** | Rate | Number of API calls per second |
+| **Average API Response Time** | Number | Response time in milliseconds |
+| **Disk Writes/sec** | Rate | Disk write operations per second |
+| **Disk Bytes Written** | Number | Total bytes written to disk |
+| **Memory Usage (MB)** | Number | Current allocated memory in MB |
+| **Active Background Tasks** | Number | Number of concurrent tasks |
+| **Error Rate %** | Percentage | Percentage of failed operations |
+| **CPU Tasks/sec** | Rate | Number of CPU-intensive tasks per second |
+| **CPU Operations Completed** | Number | Total CPU operations completed |
+| **Average Calculation Time** | Number | Average CPU task time in milliseconds |
 
-### 💿 Disk Performance
-- **Disk Activity**: Percentage of time disk is busy
-- **Disk Reads**: Number of read operations per second
-- **Disk Queue Length**: Average number of pending I/O requests
+## 🚀 Simulated Application Activities
 
-### 🌐 Network Performance
-- **Network Throughput**: Total bytes sent/received per second
-- **Network Packets**: Total packets sent/received per second  
-- **Link Speed**: Current network interface bandwidth
+1. **API Calls**: Makes HTTP requests to various endpoints
+2. **Disk I/O**: Writes JSON log files to temp directory
+3. **Memory Usage**: Dynamically allocates/deallocates memory
+4. **CPU-Intensive Operations**: Prime number calculations, matrix multiplication, Fibonacci sequences, sorting algorithms
+5. **Error Tracking**: Monitors and reports operation failures
 
 ## 🚀 How to Run
 
 ### Prerequisites
 - **Windows OS** (Performance Counters are Windows-specific)
 - **.NET 8.0 or later**
-- **Administrator privileges** (recommended for full counter access)
+- **Administrator privileges** (REQUIRED for creating performance counters)
 
 ### Running the Application
 
-1. **Build and run:**
+**Important**: You MUST run as Administrator to create performance counters.
+
+1. **Run as Administrator:**
    ```bash
+   # Open Command Prompt as Administrator, then:
    dotnet run
    ```
 
 2. **Or build and run executable:**
    ```bash
    dotnet build
+   # Run as Administrator:
    dotnet bin/Debug/net8.0/PerformanceCountersDemo.exe
    ```
 
+### Viewing in Performance Monitor
+1. **Open Performance Monitor**: Press `Win+R`, type `perfmon`, press Enter
+2. **Add Counters**: Click the green "+" button
+3. **Find Your Category**: Look for **"MyApp Performance"** in the categories list
+4. **Add Counters**: Select the counters you want to monitor
+5. **Watch Real-Time Data**: See your application's activity reflected in the graphs!
+
 ### Expected Output
 ```
-Windows Performance Counters Demo - 14:32:15
+Performance Counter Publisher Demo
+=================================
+
+✅ Custom performance counters created successfully!
+📊 Category: 'MyApp Performance'
+
+You can now view these counters in Windows Performance Monitor:
+1. Press Win+R, type 'perfmon', press Enter
+2. Click the green '+' button to add counters
+3. Look for the 'MyApp Performance' category
+
+Starting application activities...
+Press Ctrl+C to stop
+
+🚀 Performance Counter Publisher - RUNNING
+⏱️  Runtime: 02:34
 ==================================================
 
-🖥️  PROCESSOR PERFORMANCE
-─────────────────────────
-  Total CPU Usage     :     12.5 %
-  User Mode CPU       :      8.3 %
-  Kernel Mode CPU     :      4.2 %
+📊 ACTIVITY STATISTICS:
+   🌐 Total API Calls: 45
+   💾 Total Disk Writes: 28
+   📝 Bytes Written: 125,432
+   🧠 Memory Allocated: 127 MB
+   🖥️  CPU Tasks Started: 18
+   ⚙️  CPU Operations: 18
+   ⚡ Active Tasks: 3
+   ❌ Total Errors: 2
 
-💾 MEMORY PERFORMANCE
-─────────────────────
-  Available Memory    :   8432.15 MB
-  Memory Page Faults  :     125.30 /sec
-  Nonpaged Pool       :      89.75 MB
+🔍 VIEW IN PERFORMANCE MONITOR:
+   1. Press Win+R → type 'perfmon' → Enter
+   2. Click green '+' button
+   3. Find 'MyApp Performance' category
+   4. Add desired counters
 
-💿 DISK PERFORMANCE
-───────────────────
-  Disk Activity       :      5.2 %
-  Disk Reads          :     15.80 /sec
-  Disk Queue Length   :      0.02 requests
-
-🌐 NETWORK PERFORMANCE
-──────────────────────
-  Network Throughput  :    245.67 KB/s
-  Network Packets     :     89.50 /sec  
-  Link Speed          :   1000.00 Mbps
+Press Ctrl+C to stop...
 ```
 
 ## 🔧 Key Implementation Details
 
-### Performance Counter Categories
-- **Processor**: `"Processor"` category with `"_Total"` instance
-- **Memory**: `"Memory"` category (no instance needed)
-- **PhysicalDisk**: `"PhysicalDisk"` category with `"_Total"` instance
-- **Network Interface**: `"Network Interface"` category with auto-detected interface
+### Creating Custom Performance Counters
+```csharp
+var counterDataCollection = new CounterCreationDataCollection
+{
+    new CounterCreationData(
+        "API Calls/sec",
+        "Number of API calls per second",
+        PerformanceCounterType.RateOfCountsPerSecond32)
+};
 
-### Error Handling
-- Graceful handling of missing or inaccessible counters
-- Automatic network interface detection (skips loopback/virtual interfaces)
-- Counter initialization validation with user feedback
+PerformanceCounterCategory.Create(
+    "MyApp Performance",
+    "Custom performance counters for MyApp",
+    PerformanceCounterCategoryType.SingleInstance,
+    counterDataCollection);
+```
 
-### Performance Notes
-- Counter values update every 2 seconds
-- First `NextValue()` call initializes the counter (often returns 0)
-- Real-time monitoring with console clearing for better UX
+### Updating Counters
+```csharp
+// For rate counters - just increment
+_apiCallsPerSecCounter?.Increment();
 
-## 🔍 Understanding the Metrics
+// For absolute values - set directly
+_memoryUsageCounter?.SetValue(totalMemoryMB);
 
-### CPU Metrics
-- Values are percentages (0-100%)
-- User + Kernel time should approximately equal Total CPU time
-- High kernel time may indicate system bottlenecks
+// For raw values - set RawValue property
+_apiResponseTimeCounter.RawValue = stopwatch.ElapsedMilliseconds;
+```
 
-### Memory Metrics  
-- Available Memory shows free RAM
-- High page faults indicate memory pressure
-- Nonpaged Pool growth can indicate kernel memory leaks
+### Concurrent Activities
+The application runs 6 concurrent tasks:
+- API call simulation
+- Disk write simulation  
+- Memory allocation/deallocation
+- CPU-intensive computation simulation
+- Counter updates
+- Console display updates
 
-### Disk Metrics
-- Queue Length > 2 consistently indicates disk bottleneck
-- High disk time with low reads/writes suggests slow storage
+### CPU-Intensive Operations
+The application performs various processor-intensive tasks:
 
-### Network Metrics
-- Throughput shows actual data transfer
-- Compare with Link Speed to see utilization percentage
+1. **Prime Number Calculation**: Finds prime numbers up to randomly selected limits (1,000-10,000)
+2. **Matrix Multiplication**: Performs mathematical operations on matrices (50x50 to 150x150)
+3. **Fibonacci Sequence**: Calculates Fibonacci numbers recursively (35-45 terms)
+4. **Sorting Algorithms**: Executes bubble sort and quicksort on large arrays (10,000-50,000 elements)
 
 ## ⚠️ Important Notes
 
